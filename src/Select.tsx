@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import styles from "./select.module.css"
 
 export type SelectOption= {
@@ -28,8 +28,14 @@ const Select = ({multiple, value,onChange,options}: SelectProps) => {
     const [open,setOpen] = useState(false)
     const [highlightedIndex, setHighlightedIndex] = useState(0)
 
+    const containerRef = useRef<HTMLDivElement>(null)
+
     const clearOptions = () => {
-       multiple ? onChange([]) : onChange(undefined)
+        if (multiple) {
+            onChange([]);
+          } else {
+            onChange(undefined);
+          }
     }
 
     const selectOption = (option: SelectOption) => {
@@ -42,8 +48,9 @@ const Select = ({multiple, value,onChange,options}: SelectProps) => {
             }
         }
         else {
-
-            if(option !== value) onChange(option)
+            if(option !== value) {
+                onChange(option)
+            }
         }
     }
 
@@ -57,12 +64,50 @@ const Select = ({multiple, value,onChange,options}: SelectProps) => {
         }
     }, [open])
 
+    useEffect(() => {
+        const handler = (e: KeyboardEvent) => {
+          
+            if(e.target != containerRef.current) return
+            switch (e.code) {
+                case "Enter":
+                case "Space":
+                    setOpen((prev) => !prev)
+                    if(open) selectOption(options[highlightedIndex])
+                    break;
+                case "ArrowDown":
+                case "ArrowUp": {
+                    if(!open) {
+                        setOpen(true)
+                        break
+                    }
+                  
+                    const newValue = highlightedIndex + (e.code === "ArrowDown" ? 1 :-1)
+                    if(newValue >=0 && newValue < options.length) {
+                        setHighlightedIndex(newValue)
+                    }
+                    break
+                }
+                   
+                default:
+                    break;
+            }
+
+        }
+        containerRef.current?.addEventListener("keydown", handler)
+
+        return () => {
+            containerRef.current?.removeEventListener("keydown", handler)
+        }
+    },[open, options, highlightedIndex])
+
   return (
     <div 
     onBlur={() => setOpen(false)}
     onClick={() => setOpen((prev) => !prev)}
     tabIndex={0} 
-    className={styles.container}>
+    className={styles.container}
+    ref={containerRef}
+    >
         <span className={styles.value}>{multiple ? value?.map((item) => <button
         className={styles["option-badge"]}
          onClick={(e) => {
