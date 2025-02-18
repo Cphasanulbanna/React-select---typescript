@@ -8,7 +8,7 @@ type SelectOption= {
 
 type SelectProps = {
     value?: SelectOption,
-    onChange: (value: SelectOption | undefined) => void  ,
+    onChange: (value: SelectOption | undefined) => void,
     options: SelectOption[]
 }
 
@@ -17,6 +17,14 @@ const Select = ({value,onChange,options}: SelectProps) => {
 
     const clearOptions = () => {
         onChange(undefined)
+    }
+
+    const selectOption = (option: SelectOption) => {
+        onChange(option)
+    }
+
+    const isOptionSelected = (options: SelectOption) => {
+        return options === value
     }
   return (
     <div 
@@ -33,7 +41,15 @@ const Select = ({value,onChange,options}: SelectProps) => {
         <div className={styles.caret}></div>
         <ul className={`${styles.options} ${open ? styles.show : ""}`}>
             {options?.map((option) => {
-                return <li key={option.label} className={styles.option}>{option.label}</li>
+                return <li 
+                 key={option.label}
+                 className={`${styles.option} ${isOptionSelected(option) ? styles.selected : ""}`}
+                 onClick={(e) => {
+                    e.stopPropagation()
+                    selectOption(option)
+                    setOpen(false)
+                 }}
+                 >{option.label}</li>
             })}
         </ul>
     </div>
