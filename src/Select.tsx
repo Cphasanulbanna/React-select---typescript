@@ -14,10 +14,21 @@ type SelectProps = {
 
 const Select = ({value,onChange,options}: SelectProps) => {
     const [open,setOpen] = useState(false)
+
+    const clearOptions = () => {
+        onChange(undefined)
+    }
   return (
-    <div onClick={() => setOpen((prev) => !prev)} tabIndex={0} className={styles.container}>
+    <div 
+    onBlur={() => setOpen(false)}
+    onClick={() => setOpen((prev) => !prev)}
+    tabIndex={0} 
+    className={styles.container}>
         <span className={styles.value}>{value?.label}</span>
-        <button className={styles["clear-btn"]}>&times;</button>
+        <button onClick={(e) => {
+            clearOptions()
+            e.stopPropagation()
+        }} className={styles["clear-btn"]}>&times;</button>
         <div className={styles.divider}></div>
         <div className={styles.caret}></div>
         <ul className={`${styles.options} ${open ? styles.show : ""}`}>
